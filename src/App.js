@@ -1,5 +1,8 @@
 import React from 'react';
 import styled from 'styled-components'
+import {connect} from 'react-redux';
+import * as actions from './redux/actions/actionCreators';
+import Calendar from './components/Calendar'
 
 const AppContainer = styled.div`
   text-align: center;
@@ -22,22 +25,26 @@ const Page = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 60px;
+  margin-top: 15px;
 }
 `
 
-function App() {
+const App = (props) =>{
+  props.setExample()
   return (
     <AppContainer>
       <AppHeader>
-       ** Calendar App **
+        ** Calendar App **
       </AppHeader>
       <Page>
-       CALENDAR []
+        <Calendar />
       </Page>
     </AppContainer>
   );
 }
 
+const mapState = (state)=>({
+    example: state.example,
+})
 
-export default App;
+export default connect(mapState,actions)(App);
