@@ -1,7 +1,17 @@
 import React, {Component} from 'react';
 import styled from 'styled-components'
 import moment from 'moment'
+import { connect } from 'react-redux'
+import * as actions from '../redux/actions/actionCreators';
+import Pencil from 'react-material-icon-svg/dist/Pencil'
+import DeleteIcon from 'react-material-icon-svg/dist/DeleteForever'
+import AddReminderModal from './AddReminderModal'
 
+const DAYS_OF_THE_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+
+const Page = styled.div`
+    position: relative;
+`
 
 const Container = styled.div`
   display: flex;
@@ -28,7 +38,6 @@ const Header = styled.header`
   }
 `
 
-
 const Content = styled.div`
     display: flex;
     align-items: flex-start;
@@ -41,10 +50,14 @@ const Box = styled.div`
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    width: 160px;
-    height:160px;
+    width: 190px;
+    height: 350px;
     border: 0.75px solid gray;
     position:relative;
+
+    &.calendar-day-empty{
+        background-color: #CDACD2;
+    }
 `
 
 const DayNumber = styled.div`
@@ -67,39 +80,120 @@ const Reminders = styled.div`
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+    width: 100%;
+`
+
+const ReminderContainer = styled.div`
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items: flex-start;
+    border-radius: 12%;
+    background: ${props => props.color};
+    margin: 5px;
+    padding: 5px 0 0 5px;
     width: 90%;
 `
 
-const Reminder = styled.p`
-    margin: 5px;
+const EditReminder = styled.div`
+    position: absolute;
+    top: 5px;
+    right: 30px;
 `
+
+const DeleteReminder = styled.div`
+    position: absolute;
+    top: 5px;
+    right: 5px;
+`
+
+const DeleteAllButton = styled.div`
+    margin-left: 30px;
+`
+const AddReminderButton = styled.div`
+    margin-left: 30px;
+    margin-right: 15px;
+`
+
+const Nav = styled.nav`
+  margin-bottom: 5px;
+`
+
+const byTime = (a,b)=>{
+    let aDate= new Date(a.date)
+    let bDate= new Date(b.date)
+    if(aDate.getTime()>bDate.getTime()){ 
+        return 1
+    }
+    return -1
+}
+
+const ActionsBar = (props)=>{
+    return(<Nav>
+        <div className="nav-wrapper">
+            <ul id="nav-mobile" className="right hide-on-med-and-down">
+                <li>
+                    <DeleteAllButton>
+                        <button className="btn waves-effect waves-light"
+                            onClick={props.onDeleteAll}>CLEAR ALL</button>
+                    </DeleteAllButton>
+                </li>
+                <li>
+                    <AddReminderButton>
+                        <button className="btn-floating btn-large waves-effect waves-light red"
+                            onClick={props.onAddNewReminder}>
+                            <i className="material-icons">add</i></button>
+                    </AddReminderButton>
+                </li>
+            </ul>
+        </div>
+    </Nav>)
+}
+
+const Reminder = (props)=>{
+    const dateObject = moment(props.reminder.date)
+    return (
+        <ReminderContainer color={props.reminder.color}>
+            <span><b>{`${dateObject.format('HH')}:${dateObject.format('mm')}h`}</b></span>
+            <p>{props.reminder.text}</p>
+            <span><b>City:</b> {props.reminder.city}</span>
+            <span><b>Weather:</b> {props.reminder.weather}</span>
+            <EditReminder><Pencil onClick={()=>props.onEdit(props.reminder)}/></EditReminder>
+            <DeleteReminder><DeleteIcon onClick={()=>props.onDelete(props.reminder)}/></DeleteReminder>
+        </ReminderContainer>
+    ) 
+}
 
 class Presentation extends Component {
 
     state={
         dateObject: moment(),
+        showAddReminderModal: false,
+        reminderToEdit:null,
     }
 
-    firstDayOfMonth = () => {
-        let dateObject = this.state.dateObject;
-        let firstDay = moment(dateObject)
-                     .startOf("month")
-                     .format("d")
-       return firstDay;
+    handleAddReminder = ()=>{
+        this.setState({showAddReminderModal:true})
+    }
+    handleDeleteAll = ()=>{
+        this.props.resetCalendar()
+    }
+    handleCloseModal = ()=>{
+        this.setState({reminderToEdit:null,showAddReminderModal:false})
+    }
+    onEditReminder= (r)=>{
+        this.setState({reminderToEdit:r,showAddReminderModal:true })
     }
 
-    lastDayOfMonth = () =>{
-        let dateObject = this.state.dateObject
-        let lastDay = moment(dateObject)
-                     .daysInMonth("month")
-       return lastDay;
-    }
+    firstDayOfMonth = () => this.state.dateObject.startOf("month").format("d")
+    lastDayOfMonth = () => this.state.dateObject.daysInMonth("month")
 
     renderLastMonthDays=()=>{
         let blanks = []
         for (let i = 0; i < this.firstDayOfMonth(); i++) {
           blanks.push(
-            <Box className="calendar-day empty" key={`empty-${i}`} />
+            <Box className="calendar-day-empty" key={`empty-${i}`} />
           )
         }
         return blanks
@@ -118,67 +212,61 @@ class Presentation extends Component {
         return firstWeek
     }
 
+    renderRestOfTheWeeks=()=>[2,3,4,5].map(week=>(
+        <Row key={week}>{this.renderWeek(week,this.firstDayOfMonth())}</Row>))
+
     renderWeek=(week,firstDay)=>{
         let boxes = []
         let count = (week-1)*7 + (7-firstDay)
         for (let d = 1; d <= 7; d++) {
             boxes.push(
-                (d+count) <= this.lastDayOfMonth() ? (<Box key={d+count} className="calendar-day">
+                (d+count) <= this.lastDayOfMonth() 
+                ? (<Box key={d+count} className="calendar-day">
                     <DayNumber>{d+count}</DayNumber>
                     <Reminders>{this.getReminders(d+count)}</Reminders>
-                </Box>):
-                 <Box className="calendar-day empty" key={`empty-${d+count}`}>{""}</Box>
+                    </Box>)
+                : <Box className="calendar-day-empty" key={`empty-${d+count}`}>{""}</Box>
             )
         }
         return boxes
     }
 
     getReminders = (d)=>{
-        return [
-            <Reminder>Reminder1</Reminder>,
-            <Reminder>Reminder2</Reminder>,
-            <Reminder>Reminder3</Reminder>,
-        ]
+        const sortedReminders = this.props.month[d-1] ? this.props.month[d-1].sort(byTime) : []
+        return sortedReminders.map(r => 
+            <Reminder key={`key-${r.id[0]}${r.id[1]}`} reminder={r} onEdit={this.onEditReminder} 
+                onDelete={this.props.deleteReminder}/>)
     }
-
 
     render(){
-
-        return <div>
-        <Container>
-            <Header>
-                <p>Sunday</p>
-                <p>Monday</p>
-                <p>Tuesday</p>
-                <p>Wednesday</p>
-                <p>Thursday</p>
-                <p>Friday</p>
-                <p>Saturday</p>
-            </Header>
-            <Content>
-                <Row>
-                    {this.renderLastMonthDays()}
-                    {this.renderFirstWeek()}
-                </Row>
-                <Row>
-                    {this.renderWeek(2,this.firstDayOfMonth())}
-                </Row>
-                <Row>
-                    {this.renderWeek(3,this.firstDayOfMonth())}
-                </Row>
-                <Row>
-                    {this.renderWeek(4,this.firstDayOfMonth())}
-                </Row>
-                <Row>
-                    {this.renderWeek(5,this.firstDayOfMonth())}
-                </Row>
-
-            </Content>
-        </Container>
-        </div>
+        return (
+        <Page>                  
+            <ActionsBar onDeleteAll={this.handleDeleteAll} onAddNewReminder={this.handleAddReminder}/>
+            <Container>
+                <Header>
+                    {DAYS_OF_THE_WEEK.map(day=><p key={day}>{day}</p>)}
+                </Header>
+                <Content>
+                    <Row>
+                        {this.renderLastMonthDays()}
+                        {this.renderFirstWeek()}
+                    </Row>
+                    {this.renderRestOfTheWeeks()}
+                </Content>
+            </Container>
+            {this.state.showAddReminderModal 
+            ?   <AddReminderModal
+                    dateObject= {this.state.dateObject}
+                    onClose={this.handleCloseModal}
+                    reminderToEdit={this.state.reminderToEdit}
+                /> 
+            : null}
+        </Page>)
     }
-
-
 }
 
-export default Presentation
+const mapState = (state) =>({
+    month: state.month,
+})
+
+export default connect(mapState,actions)(Presentation)

@@ -1,2 +1,8 @@
 
-export const EXAMPLE = 'EXAMPLE'
+export const SAVE_REMINDER = 'SAVE_REMINDER'
+
+export const DELETE_REMINDER = 'EDIT_REMINDER'
+
+export const RESET_CALENDAR = 'RESET_CALENDAR'
+
+

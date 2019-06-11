@@ -1,7 +1,5 @@
 import React from 'react';
 import styled from 'styled-components'
-import {connect} from 'react-redux';
-import * as actions from './redux/actions/actionCreators';
 import Calendar from './components/Calendar'
 
 const AppContainer = styled.div`
@@ -10,13 +8,14 @@ const AppContainer = styled.div`
 
 const AppHeader = styled.header`
   background-color: #282c34;
-  min-height: 20vh;
+  min-height: 10vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  margin-bottom: 15px;
 }
 `
 
@@ -25,12 +24,10 @@ const Page = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 15px;
 }
 `
 
-const App = (props) =>{
-  props.setExample()
+const App = () =>{
   return (
     <AppContainer>
       <AppHeader>
@@ -43,8 +40,4 @@ const App = (props) =>{
   );
 }
 
-const mapState = (state)=>({
-    example: state.example,
-})
-
-export default connect(mapState,actions)(App);
+export default App

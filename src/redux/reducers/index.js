@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux'
-import example from './exampleReducer'
+import month from './monthReducer'
 
 const rootReducer = combineReducers({
-  example,
+  month,
 })
 
 export default rootReducer
