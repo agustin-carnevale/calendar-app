@@ -1,5 +1,5 @@
-import uuidv1 from 'uuid/v1'
 import { SAVE_REMINDER , DELETE_REMINDER, RESET_CALENDAR} from "../actions/types";
+import uuidv1 from 'uuid/v1'
 
 const reducer = (state = new Array(31), action) => {
   switch (action.type) {

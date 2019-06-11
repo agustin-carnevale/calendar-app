@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import styled from 'styled-components'
 import { connect } from 'react-redux'
 import moment from 'moment'
-import Modal from '../ui/Modal'
+import Modal from './ui/Modal'
 import * as actions from '../redux/actions/actionCreators';
 
 const Container = styled.div`
@@ -14,10 +14,12 @@ const Container = styled.div`
 
 const InputBox = styled.div`
     margin: 20px;
-    color: blue;
     width: 400px;
-`
 
+    @media (max-width: 620px) {
+        width: 80%;
+    }
+`
 
 class ReminderForm extends Component {
     state={
@@ -115,13 +117,11 @@ class ReminderForm extends Component {
     }
 }
 
-
 const Presentation = (props) =>(
     <Modal 
         content={<ReminderForm {...props} />}
         onClose={props.onClose}
     />
 )
-
 
 export default connect(null,actions)(Presentation)

@@ -3,9 +3,8 @@ import styled from 'styled-components'
 import moment from 'moment'
 import { connect } from 'react-redux'
 import * as actions from '../redux/actions/actionCreators';
-import Pencil from 'react-material-icon-svg/dist/Pencil'
-import DeleteIcon from 'react-material-icon-svg/dist/DeleteForever'
 import AddReminderModal from './AddReminderModal'
+import Reminder from './Reminder'
 
 const DAYS_OF_THE_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
 
@@ -14,28 +13,35 @@ const Page = styled.div`
 `
 
 const Container = styled.div`
-  display: flex;
-  border-radius: 7px;
-  box-shadow: 2px 2px 15px 0 rgba(0, 0, 0, 0.11);
-  flex-flow: column nowrap;
-  min-width: 1100px;
-  min-height: 70vh;
+    display: flex;
+    border-radius: 7px;
+    box-shadow: 2px 2px 15px 0 rgba(0, 0, 0, 0.11);
+    flex-flow: column nowrap;
+    width: 100vw;
+    min-height: 70vh;
+    @media (max-width: 620px) {
+        width: 80vw;
+    }
 `
 
 const Header = styled.header`
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  color: white;
-  font-size: 18px;
-  min-height: 20px;
-  width: 100%;
-  background-color: #4682B4;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    color: white;
+    font-size: 18px;
+    min-height: 20px;
+    width: 100%;
+    background-color: #4682B4;
 
-  & > p {
-    margin: 0;
-    flex: 1 0 140px;
-  }
+    & > p {
+        margin: 0;
+        width: 15%;
+    }
+
+    @media (max-width: 620px) {
+        display:none;
+    }
 `
 
 const Content = styled.div`
@@ -50,13 +56,20 @@ const Box = styled.div`
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    width: 190px;
-    height: 350px;
+    width: 15%;
+    height: 400px;
     border: 0.75px solid gray;
     position:relative;
 
     &.calendar-day-empty{
         background-color: #CDACD2;
+        @media (max-width: 620px) {
+            display:none;
+        }
+    }
+
+    @media (max-width: 620px) {
+        width: 100%;
     }
 `
 
@@ -72,6 +85,10 @@ const Row = styled.div`
     justify-content: flex-start;
     flex-direction: row;
     width: 100%;
+
+    @media (max-width: 620px) {
+        flex-direction: column;
+    }
 `
 
 const Reminders = styled.div`
@@ -83,31 +100,6 @@ const Reminders = styled.div`
     width: 100%;
 `
 
-const ReminderContainer = styled.div`
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content:center;
-    align-items: flex-start;
-    border-radius: 12%;
-    background: ${props => props.color};
-    margin: 5px;
-    padding: 5px 0 0 5px;
-    width: 90%;
-`
-
-const EditReminder = styled.div`
-    position: absolute;
-    top: 5px;
-    right: 30px;
-`
-
-const DeleteReminder = styled.div`
-    position: absolute;
-    top: 5px;
-    right: 5px;
-`
-
 const DeleteAllButton = styled.div`
     margin-left: 30px;
 `
@@ -117,7 +109,7 @@ const AddReminderButton = styled.div`
 `
 
 const Nav = styled.nav`
-  margin-bottom: 5px;
+    margin-bottom: 5px;
 `
 
 const byTime = (a,b)=>{
@@ -132,7 +124,7 @@ const byTime = (a,b)=>{
 const ActionsBar = (props)=>{
     return(<Nav>
         <div className="nav-wrapper">
-            <ul id="nav-mobile" className="right hide-on-med-and-down">
+            <ul id="nav-mobile" className="right">
                 <li>
                     <DeleteAllButton>
                         <button className="btn waves-effect waves-light"
@@ -151,19 +143,6 @@ const ActionsBar = (props)=>{
     </Nav>)
 }
 
-const Reminder = (props)=>{
-    const dateObject = moment(props.reminder.date)
-    return (
-        <ReminderContainer color={props.reminder.color}>
-            <span><b>{`${dateObject.format('HH')}:${dateObject.format('mm')}h`}</b></span>
-            <p>{props.reminder.text}</p>
-            <span><b>City:</b> {props.reminder.city}</span>
-            <span><b>Weather:</b> {props.reminder.weather}</span>
-            <EditReminder><Pencil onClick={()=>props.onEdit(props.reminder)}/></EditReminder>
-            <DeleteReminder><DeleteIcon onClick={()=>props.onDelete(props.reminder)}/></DeleteReminder>
-        </ReminderContainer>
-    ) 
-}
 
 class Presentation extends Component {
 
@@ -212,12 +191,12 @@ class Presentation extends Component {
         return firstWeek
     }
 
-    renderRestOfTheWeeks=()=>[2,3,4,5].map(week=>(
+    renderRestOfTheWeeks=()=>[2,3,4,5,6].map(week=>(
         <Row key={week}>{this.renderWeek(week,this.firstDayOfMonth())}</Row>))
 
     renderWeek=(week,firstDay)=>{
         let boxes = []
-        let count = (week-1)*7 + (7-firstDay)
+        let count = (week-2)*7 + (7-firstDay)
         for (let d = 1; d <= 7; d++) {
             boxes.push(
                 (d+count) <= this.lastDayOfMonth() 

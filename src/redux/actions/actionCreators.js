@@ -13,6 +13,7 @@ export const saveReminder  = (day,reminder) => async dispatch => {
             const json = await response.json()
             reminder['weather']= json.list[(day-today-1)*8+4].weather[0].description
         } catch (error) {
+            reminder['weather']= "-API failed-"
             console.log(error)
         }
     }else{
